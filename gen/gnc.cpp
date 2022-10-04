@@ -204,6 +204,26 @@ int wait4connect()
 	
 	
 }
+
+int wait4mode(const char *mode)
+{
+	ROS_INFO("Waiting for user to set mode to %s", mode);
+	while(ros::ok() && current_state_g.mode != mode)
+	{
+	    ros::spinOnce();
+	    ros::Duration(0.01).sleep();
+  	}
+  	if(current_state_g.mode == mode)
+	{
+		ROS_INFO("Mode set to %s. ", mode);
+		return 0;
+	}else{
+		ROS_INFO("Error starting mission!!");
+		return -1;	
+	}
+
+}
+
 /**
 \ingroup control_functions
 Wait for strat will hold the program until the user signals the FCU to enther mode guided. This is typically done from a switch on the safety pilot’s remote or from the ground control station.
@@ -212,20 +232,7 @@ Wait for strat will hold the program until the user signals the FCU to enther mo
 */
 int wait4start()
 {
-	ROS_INFO("Waiting for user to set mode to GUIDED");
-	while(ros::ok() && current_state_g.mode != "GUIDED")
-	{
-	    ros::spinOnce();
-	    ros::Duration(0.01).sleep();
-  	}
-  	if(current_state_g.mode == "GUIDED")
-	{
-		ROS_INFO("Mode set to GUIDED. Mission starting");
-		return 0;
-	}else{
-		ROS_INFO("Error starting mission!!");
-		return -1;	
-	}
+	return wait4mode("GUIDED");
 }
 /**
 \ingroup control_functions
@@ -313,26 +320,8 @@ int gnc_takeoff(float takeoff_alt)
 		ros::spinOnce();
 		ros::Duration(0.01).sleep();
 	}
-	// arming
-	ROS_INFO("Arming drone");
-	mavros_msgs::CommandBool arm_request;
-	arm_request.request.value = true;
-	while (!current_state_g.armed && !arm_request.response.success && ros::ok())
-	{
-		ros::Duration(.1).sleep();
-		arming_client.call(arm_request);
-		local_pos_pub.publish(waypoint_g);
-	}
-	if(arm_request.response.success)
-	{
-		ROS_INFO("Arming Successful");	
-	}else{
-		ROS_INFO("Arming failed with %d", arm_request.response.success);
-		return -1;	
-	}
 
 	//request takeoff
-	
 	mavros_msgs::CommandTOL srv_takeoff;
 	srv_takeoff.request.altitude = takeoff_alt;
 	if(takeoff_client.call(srv_takeoff)){
@@ -492,6 +481,7 @@ int init_publisher_subscriber(ros::NodeHandle controlnode)
 	takeoff_client = controlnode.serviceClient<mavros_msgs::CommandTOL>((ros_namespace + "/mavros/cmd/takeoff").c_str());
 	collision_sub = controlnode.subscribe<sensor_msgs::LaserScan>("/spur/laser/scan", 1, scan_cb);
 
+	return 0;
 }
 
 void gnc_sigint_handler(int sig) {
@@ -513,10 +503,12 @@ void gnc_init() {
   	// wait for FCU connection
 	wait4connect();
 
-	//
-	set_mode("GUIDED");
+	set_mode("STABILIZE");
+	wait4mode("STABILIZE");
+	gnc_arm();
 
 	//wait for used to switch to mode GUIDED
+	set_mode("GUIDED");
 	wait4start();
 
 	//create local reference frame 
