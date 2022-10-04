@@ -387,6 +387,7 @@ int set_mode(std::string mode)
     srv_setMode.request.custom_mode = mode.c_str();
     if(set_mode_client.call(srv_setMode)){
       ROS_INFO("setmode send ok");
+      return 0;
     }else{
       ROS_ERROR("Failed SetMode");
       return -1;
@@ -466,7 +467,6 @@ int init_publisher_subscriber(ros::NodeHandle controlnode)
 	std::string ros_namespace;
 	if (!controlnode.hasParam("namespace"))
 	{
-
 		ROS_INFO("using default namespace");
 	}else{
 		controlnode.getParam("namespace", ros_namespace);
