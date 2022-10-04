@@ -2,10 +2,9 @@
 
 ## How to run
 
-1. Use hisazumi/aprisrc-sitl docker image
+1. Install AirSim and ArduPilot SITL for Ubuntu on Windows Subsystem for Linux (WSL 1)
 
-* https://hub.docker.com/repository/docker/hisazumi/aprisrc-sitl
-* https://github.com/hisazumi/aprisrc-sitl
+* https://github.com/hisazumi/aprisrc-sitl/tree/forairsim
 
 2. Download this project in catkin_ws/src in the conatiner
 ```
@@ -22,7 +21,7 @@ git clone https://github.com/hisazumi/gnc.git
 
 4. Run in terminal
 
-* Before executing gnc, run simulator.sh, sitl.sh, and apm accroding to README.md of the container.
+* Before executing gnc, run Airsim, ArduCopter SITL, and apm accroding to README.md of the installation instruction.
 ```
 rosrun gnc ctrl
 ```
