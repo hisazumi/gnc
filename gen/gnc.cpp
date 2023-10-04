@@ -1,5 +1,6 @@
 #include "gnc.h"
-#include "MAV.h"
+#include "gnc_sys_types.h"
+#include "GrandController_classes.h"
 
 /* imported from iq_gnc 
    https://github.com/Intelligent-Quads/iq_gnc */
@@ -387,6 +388,7 @@ int set_mode(std::string mode)
     srv_setMode.request.custom_mode = mode.c_str();
     if(set_mode_client.call(srv_setMode)){
       ROS_INFO("setmode send ok");
+      return 0;
     }else{
       ROS_ERROR("Failed SetMode");
       return -1;
@@ -520,7 +522,7 @@ void gnc_background (void) {
 	ros::spinOnce();
 	if (is_waypoint_set) {
 		if (gnc_check_waypoint_reached(1.0)) {
-			MAV_Port1_ready();
+			GrandController_ready();
 			is_waypoint_set = false;
 		}
 	}
